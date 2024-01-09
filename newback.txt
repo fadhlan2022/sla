@@ -1,0 +1,155 @@
+<?php
+$title = 'dashboard';
+include 'validasi.php';
+include 'requirement.php';
+include 'navbar.php';
+include 'get.php';
+?>
+
+  <?php
+  if($data['level']=="1"){
+    include 'sidebar_1.php';
+  }else if($data['level']=="2"){
+    include 'sidebar_2.php';
+  }
+  ?>
+
+
+  <?php
+  include 'header.php';
+    // Function to get user name based on pic_user
+  function getUserName($pic_user) {
+    global $konek;
+    $query = mysqli_query($konek, "SELECT nama FROM user WHERE nik = '$pic_user'");
+    $hasil = mysqli_fetch_array($query);
+    return $hasil['nama'];
+  }
+  ?>
+
+<!-- Main content -->
+<div class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-lg-12">
+            <div class="card">
+              <!-- Tabel Data SLA -->
+                <div class="card-body">
+                    <div class="search-box">
+                      <div class="input-group">
+                        <input class="form-control form-control-sm-2" id="myInput" type="text" placeholder="Search..." style="max-width: 200px;" autocomplete="off">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" onclick="search()">
+                              <i class="fas fa-search" style="color: white;"></i>&nbsp;&nbsp;Search
+                            </button>
+                        </div>
+                      </div>
+                    </div>
+                    <a class="btn btn-success btn-sm mt-2" href="tambah_project.php">
+                        <i class="fas fa-plus"></i>
+                        &nbsp;&nbsp; Add New Project
+                    </a>
+                    <div class="table-container">
+                      <table id="example2" class="table table-striped projects mt-3">
+                        <thead>
+                            <tr>
+                                <th style="width: 2%">No</th>
+                                <th style="width: 5%">Kode Project</th>
+                                <th class="width: 30%">Nama Project</th>
+                                <th style="width: 5%">Departemen</th>
+                                <th style="width: 5%">Scope</th>
+                                <th style="width: 20%">User</th>
+                                <th style="width: 5%">SLA User</th>
+                                <th style="width: 5%">SLA HCSA</th>
+                                <th style="width: 5%">SLA IT Scrum</th>
+                                <th style="width: 5%">SLA IT GM</th>
+                                <th style="width: 5%">SLA IT DEV</th>
+                                <th style="width: 5%">SLA IT QA</th>
+                                <th style="width: 5%">SLA IT Rollout</th>
+                                <th style="width: 5%">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myTable">
+                        <?php
+                        $no = 0;
+                        $query = mysqli_query($konek, "SELECT user.*, master_project.*, dept.*, master_scope.*, user.nama AS nama_user 
+                        FROM user  
+                        INNER JOIN master_project ON master_project.nik = user.nik
+                        INNER JOIN dept ON master_project.kode_departemen = dept.kode_departemen
+                        INNER JOIN master_scope ON master_project.kode_scope = master_scope.kode_scope");
+
+                            while ($hasil = mysqli_fetch_array($query)) {
+                        $no++;
+                        ?>
+                          <tr>
+                            <td><?php echo $no++;?></td>
+                            <td><?php echo $hasil['kode_project']; ?></td>
+                            <td><?php echo $hasil['nama_project']; ?></td>
+                            <td><?php echo $hasil['departemen']; ?></td>
+                            <td><?php echo $hasil['nama_scope']; ?></td>
+                            <td><?php echo getUserName($hasil['pic_user']); ?></td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td>1</td>
+                            <td class="project-actions text-center">
+                            <?php
+                              // Memeriksa apakah database log_trs memiliki data transaksi
+                              $query_check_transaksi = mysqli_query($konek, "SELECT COUNT(*) as count_transaksi FROM log_trs WHERE kode_project='" . $hasil['kode_project'] . "'");
+                              $data_check_transaksi = mysqli_fetch_assoc($query_check_transaksi);
+                                                      
+                              if ($data_check_transaksi['count_transaksi'] > 0) {
+                                  // Database log_trs memiliki data transaksi
+                                  $transaksiHref = 'transaksi.php?kode_project=' . $hasil['kode_project'];
+                              } else {
+                                  // Database log_trs kosong
+                                  $transaksiHref = 'transaksi_awal.php?kode_project=' . $hasil['kode_project'];
+                              }
+                              ?>               
+                              <a class="btn btn-success btn-sm" href="<?php echo $transaksiHref; ?>">
+                                  Transaksi
+                              </a>
+                              <a class="btn btn-warning btn-sm" href="#">
+                                History
+                              </a>
+                              <a class="btn btn-danger btn-sm" href="hapus_data_project.php?kode_project=<?php echo $hasil['kode_project']; ?>">
+                                Delete
+                              </a>
+                            </td>
+                          </tr>
+                          <?php
+                            }
+                          ?>
+                        </tbody>
+                      </table>
+                    </div>
+                    <!-- Pagination -->
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </div>
+    <!-- /.content -->
+  </div>
+  <!-- /.content-wrapper -->
+
+  <!-- /.control-sidebar -->
+
+  <!-- Main Footer -->
+<?php
+include 'footer.php';
+?>
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED SCRIPTS -->
+<?php
+include 'script.php';
+?>
+</body>
+</html>
